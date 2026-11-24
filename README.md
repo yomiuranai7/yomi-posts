@@ -21,7 +21,7 @@
 |---|---|
 | `IG_ACCESS_TOKEN` | Instagram のアクセストークン（Instagram ログイン版・60日有効のもの） |
 | `THREADS_ACCESS_TOKEN` | Threads のアクセストークン（60日有効のもの） |
-| `GH_PAT` | GitHub の fine-grained トークン。対象はこのリポジトリだけ・権限は「Secrets：Read and write」だけ。トークン更新で Secrets を上書きするのに使う |
+| `GH_PAT` | GitHub の fine-grained トークン（名前 yomi-posts・2027-11-23 まで）。対象はこのリポジトリだけ・権限は Contents・Secrets・Workflows の読み書き。トークン更新で Secrets を上書きするのに使う（Mac からファイルを送るときも同じトークン。Mac のキーチェーンに保存ずみ） |
 
 トークンはファイルにもチャットにも書かず、ここに自分で貼ります。
 
