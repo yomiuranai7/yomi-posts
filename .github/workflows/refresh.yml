@@ -1,0 +1,49 @@
+name: トークンの更新（週1回）
+
+# Instagram・Threads のトークンは60日で切れる。作って24時間たてば更新できるので、毎週更新して Secrets を上書きする。
+# Secrets の上書きには GH_PAT（このリポジトリだけ・Secrets の読み書きができる fine-grained トークン）を使う。
+
+on:
+  schedule:
+    - cron: "41 1 * * 1"   # 毎週月曜 日本時間 10:41（UTC 1:41）
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instagram のトークンを更新
+        env:
+          OLD: ${{ secrets.IG_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          res=$(curl -sS -G "https://graph.instagram.com/refresh_access_token" \
+                --data-urlencode "grant_type=ig_refresh_token" \
+                --data-urlencode "access_token=$OLD")
+          new=$(echo "$res" | jq -r '.access_token // empty')
+          if [ -z "$new" ]; then echo "Instagram の更新に失敗：$(echo "$res" | jq -c '.error // .')"; exit 1; fi
+          echo "::add-mask::$new"
+          printf '%s' "$new" | gh secret set IG_ACCESS_TOKEN --repo "$REPO"
+          echo "Instagram：更新しました（あと $(echo "$res" | jq -r '.expires_in') 秒有効）"
+
+      - name: Threads のトークンを更新
+        if: always()
+        env:
+          OLD: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          res=$(curl -sS -G "https://graph.threads.net/refresh_access_token" \
+                --data-urlencode "grant_type=th_refresh_token" \
+                --data-urlencode "access_token=$OLD")
+          new=$(echo "$res" | jq -r '.access_token // empty')
+          if [ -z "$new" ]; then echo "Threads の更新に失敗：$(echo "$res" | jq -c '.error // .')"; exit 1; fi
+          echo "::add-mask::$new"
+          printf '%s' "$new" | gh secret set THREADS_ACCESS_TOKEN --repo "$REPO"
+          echo "Threads：更新しました（あと $(echo "$res" | jq -r '.expires_in') 秒有効）"

@@ -1,0 +1,5 @@
+.DS_Store
+make-images/*.html
+make-images/*.png
+!make-images/x-icon.png
+__pycache__/
